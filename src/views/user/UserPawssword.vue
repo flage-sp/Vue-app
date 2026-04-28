@@ -50,7 +50,7 @@ const reset = () => {
 
 <template>
   <div>
-    <FormWork>
+    <FormWork :message="[]" :getlist="() => {}">
       <template #pos>
         <div>
           <el-form

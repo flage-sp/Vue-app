@@ -24,8 +24,7 @@ const rules = {
 }
 const counter = async () => {
   const res = await gengxin(formModel.value)
-  console.log(res)
-  console.log(formModel.value)
+
   if (res.code == 2) {
     ElMessage.success('邮箱输入错误')
     return
@@ -38,7 +37,7 @@ const counter = async () => {
 
 <template>
   <div>
-    <FormWork>
+    <FormWork :message="[]" :getlist="() => {}">
       <template #pos>
         <div>
           <el-form

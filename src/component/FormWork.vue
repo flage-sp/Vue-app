@@ -61,7 +61,6 @@ const deleteCategory = async (row) => {
 }
 const slotContainer = ref('')
 const addcategory = () => {
-  console.log(slotContainer.value.querySelector('.el-button span').textContent.trim())
   if (slotContainer.value.querySelector('.el-button span').textContent.trim() == '发布文章') {
     conent.value = '发布文章'
 
@@ -81,18 +80,25 @@ const addcategory = () => {
 const props = defineProps({
   message: {
     type: Array,
-    required: true,
   },
   getlist: {
     type: Function,
-    required: true,
+  },
+  loadings: {
+    type: Boolean,
   },
 })
+
+const drawer = ref(false)
+const direction = ref('rtl')
+const handleClose = () => {
+  drawer.value = false
+}
 // 上传器
 const imgUrl = ref('')
 const onSelectFile = (uploadFile) => {
   imgUrl.value = URL.createObjectURL(uploadFile.raw)
-  console.log(uploadFile.raw)
+
   text.value.cover_img = uploadFile.raw
 }
 const lodingg = () => {
@@ -126,7 +132,7 @@ async function imageUrlToFile(imageUrl, fileName) {
 
     return file
   } catch (error) {
-    console.error('图片转换失败：', error)
+    ElMessage.success('图片转换失败')
     throw error
   }
 }
@@ -143,7 +149,6 @@ const arrcate = async (row) => {
   text.value = data.value
 }
 const firmClick = async (title) => {
-  console.log(text.value)
   if (data.value) {
     const gtres = baseurl + data.value.cover_img
     const img = await imageUrlToFile(gtres, data.value.cover_img)
@@ -153,11 +158,11 @@ const firmClick = async (title) => {
     for (let key in data.value) {
       jjb.append(key, data.value[key])
     }
-    const resy = await bianji(jjb)
-    console.log(resy)
+    await bianji(jjb)
+
     props.getlist(true)
     ElMessage.success('修改成功')
-    console.log(data.value)
+
     drawer2.value = false
     return
   }
@@ -172,8 +177,8 @@ const firmClick = async (title) => {
   drawer2.value = false
 }
 const deleteCate = async (row) => {
-  const res = await deletetext(row.id)
-  console.log(res)
+  await deletetext(row.id)
+
   ElMessage.success('删除成功')
   props.getlist(true)
 }
@@ -193,8 +198,8 @@ const deleteCate = async (row) => {
     <slot name="pos">
       <div class="text item">
         <el-table
-          v-if="props.message"
-          v-loading="store.loading"
+          v-if="props.message.length > 0"
+          v-loading="props.loadings"
           :data="props.message"
           style="width: 100%"
           :row-style="{ height: '80px' }"
@@ -248,7 +253,7 @@ const deleteCate = async (row) => {
       <h4>{{ conent }}</h4>
     </template>
     <template #default>
-      <el-form :model="text" :rules="rules">
+      <el-form :model="text" :rules="rules" label-width="100px">
         <el-form-item label="文章标题" prop="title">
           <el-input placeholder="请输入文章标题" v-model="text.title"></el-input>
         </el-form-item>

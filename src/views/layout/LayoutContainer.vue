@@ -1,7 +1,7 @@
 <script setup>
 import { chebian } from '@/api/index'
 import { useuserstore } from '@/stores/index'
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import {
   Management,
   Promotion,
@@ -13,16 +13,25 @@ import {
 } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter, useRoute } from 'vue-router'
-
+import lottie from 'lottie-web'
+import tushucopy from '@/assets/tushucopy.json'
 const router = useRouter() // 路由实例，用于导航
 const route = useRoute() // 当前路由信息对象
 const resd = ref([])
 const usestore = useuserstore()
-
+const lottieBox = ref(null)
+onMounted(() => {
+  lottieBox.value = lottie.loadAnimation({
+    container: lottieBox.value,
+    animationData: tushucopy,
+    renderer: 'svg',
+    loop: true,
+    autoplay: true,
+  })
+})
 const qw = async () => {
   const res = await chebian()
   resd.value = res
-  console.log(usestore.files.user_pic)
 }
 qw()
 const exit = async () => {
@@ -46,14 +55,13 @@ watch(
   },
   { deep: true },
 )
-console.log(eft.value)
 </script>
 
 <template>
   <div class="common-layout">
     <el-container>
-      <el-aside width="220px">
-        <div class="ui"></div>
+      <el-aside height="auto" width="auto">
+        <div class="ui" ref="lottieBox"></div>
         <el-menu
           :default-active="eft"
           class="el-menu-vertical-demo"
@@ -114,27 +122,33 @@ console.log(eft.value)
           </el-dropdown>
         </el-header>
         <el-main>
-          <transition name="route-fade">
-            <!-- 新增过渡组件，指定动画名称 -->
-            <router-view></router-view>
-            <!-- 原路由容器 -->
-          </transition>
+          <router-view v-slot="{ Component }">
+            <transition name="route-fade">
+              <component :is="Component" />
+            </transition>
+          </router-view>
         </el-main>
       </el-container>
     </el-container>
   </div>
 </template>
 
-<style scoped>
-.ui {
-  height: 190px;
-  background:
-    url(@/assets/logo2-614f2fe8.png) no-repeat center/120px auto,
-    black;
+<style scoped lang="scss">
+.el-aside {
+  width: 220px;
+  height: 1000px;
 }
+.ui {
+  height: 25%;
+  background-color: black;
+  svg {
+    background-color: black;
+  }
+}
+
 .el-menu-vertical-demo {
   background-color: black;
-  height: 741px;
+  height: 75%;
 }
 .el-header {
   background-color: #fff;

@@ -15,7 +15,7 @@ const router = createRouter({
       components: {
         sidebar: () => import('@/views/layout/LayoutContainer.vue'),
       },
-      redirect: '/LoginPage',
+      redirect: '/ArticleManage',
       children: [
         {
           path: '/UserAvatar',
@@ -42,12 +42,12 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((to) => {
+router.beforeEach((to, from, next) => {
   const usestore = useuserstore()
   if (!usestore.token && to.path !== '/LoginPage') {
-    return '/LoginPage'
+    next('/LoginPage')
   } else {
-    return true
+    next()
   }
 })
 

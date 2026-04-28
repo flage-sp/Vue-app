@@ -13,8 +13,7 @@ const onSelectFile = async (uploadFile) => {
   reader.readAsDataURL(uploadFile.raw)
   reader.onload = async () => {
     const base64 = reader.result
-    const res = await touxiang(base64)
-    console.log(res)
+    await touxiang(base64)
   }
   const img = URL.createObjectURL(uploadFile.raw)
   imgUrl.value = img
@@ -31,10 +30,10 @@ const disster = () => {
 
 <template>
   <div>
-    <FormWork>
+    <FormWork :message="[]" :getlist="() => {}">
       <template #pos>
         <div>
-          <el-form>
+          <el-form label-width="auto">
             <el-form-item label="选择图片">
               <el-upload
                 class="avatar-uploader"
