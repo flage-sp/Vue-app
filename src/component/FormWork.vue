@@ -17,6 +17,8 @@ import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
 import { useuserstore } from '@/stores/index'
 import { baseurl } from '@/utils/request'
+import { useRoute } from 'vue-router'
+const route = useRoute()
 const store = useuserstore()
 const text = ref({
   title: '',
@@ -39,13 +41,17 @@ const drawer2 = ref(false)
 const loading = ref(false)
 const emit = defineEmits(['meesage'])
 const huolist = async () => {
+  loading.value = true
   store.removeloading(true)
   const res = await textacquisition()
   list.value = res.data
   store.removeloading(false)
   emit('meesage', list.value)
+  loading.value = false
 }
-onMounted(huolist)
+onMounted(() => {
+  huolist()
+})
 const arrcategory = (row) => {
   fromit.value.open(row)
 }
@@ -87,6 +93,15 @@ const props = defineProps({
   loadings: {
     type: Boolean,
   },
+  height: {
+    type: Number,
+  },
+  top: {
+    type: Number,
+  },
+  divloading: {
+    type: Boolean,
+  },
 })
 
 const drawer = ref(false)
@@ -98,7 +113,6 @@ const handleClose = () => {
 const imgUrl = ref('')
 const onSelectFile = (uploadFile) => {
   imgUrl.value = URL.createObjectURL(uploadFile.raw)
-
   text.value.cover_img = uploadFile.raw
 }
 const lodingg = () => {
@@ -185,7 +199,10 @@ const deleteCate = async (row) => {
 </script>
 
 <template>
-  <el-card style="max-width: 1372px; height: 830px">
+  <el-card
+    style="max-width: 1372px; height: auto; min-height: 700px"
+    :style="{ height: props.height ? '730px' : 'auto', 'margin-top': props.top }"
+  >
     <template #header>
       <div class="card-header">
         <div>
@@ -197,26 +214,38 @@ const deleteCate = async (row) => {
     <slot name="header"></slot>
     <slot name="pos">
       <div class="text item">
-        <el-table
-          v-if="props.message.length > 0"
-          v-loading="props.loadings"
-          :data="props.message"
-          style="width: 100%"
-          :row-style="{ height: '80px' }"
-        >
-          <el-table-column prop="title" label="文章标题" width="180" height="1000px" />
-          <el-table-column prop="cate_name" label="分类" width="250" />
-          <el-table-column prop="dateObj" label="发表时间" width="350" />
-          <el-table-column prop="state" label="状态" width="350" />
-          <el-table-column prop="address" label="操作">
-            <template #default="{ row }">
-              <div class="pass">
-                <el-button :icon="Edit" round @click="arrcate(row)">编辑</el-button>
-                <el-button :icon="Delete" round @click="deleteCate(row)">删除</el-button>
-              </div>
-            </template>
-          </el-table-column>
-        </el-table>
+        <div v-if="route.fullPath === '/ArticleChannel'" class="mainget">
+          <el-table
+            v-if="props.message.length > 0 || props.loadings"
+            v-loading="props.loadings"
+            :data="props.message"
+            style="width: 100%"
+            :row-style="{ height: '80px' }"
+          >
+            <el-table-column prop="title" label="文章标题" width="240" />
+            <el-table-column prop="cate_name" label="分类" width="240" />
+            <el-table-column prop="dateObj" label="发表时间" width="240" />
+            <el-table-column prop="state" label="状态" width="240" />
+            <el-table-column prop="address" label="操作" width="240">
+              <template #default="{ row }">
+                <div class="pass">
+                  <el-button :icon="Edit" round @click="arrcate(row)" class="edit-btn"
+                    >编辑</el-button
+                  >
+                  <el-button :icon="Delete" round @click="deleteCate(row)" class="delete-btn"
+                    >删除</el-button
+                  >
+                </div>
+              </template>
+            </el-table-column>
+          </el-table>
+          <div class="mainitem" v-if="!props.loadings && props.message.length === 0">
+            <div v-loading="props.divloading">
+              <img src="../assets/crying_face_color.svg" alt="加载中..." />
+              <div class="text">当前没有文章,请去添加文章吧</div>
+            </div>
+          </div>
+        </div>
         <el-table
           v-else
           v-loading="store.loading"
@@ -224,14 +253,18 @@ const deleteCate = async (row) => {
           style="width: 100%"
           :row-style="{ height: '80px' }"
         >
-          <el-table-column prop="id" label="序号" width="180" height="1000px" />
-          <el-table-column prop="cate_name" label="分列名称" width="450" />
-          <el-table-column prop="cate_alias" label="分类别名" width="450" />
-          <el-table-column prop="address" label="操作">
+          <el-table-column prop="id" label="序号" width="300" />
+          <el-table-column prop="cate_name" label="分列名称" width="300" />
+          <el-table-column prop="cate_alias" label="分类别名" width="300" />
+          <el-table-column prop="address" label="操作" width="300">
             <template #default="{ row, $index }">
               <div class="pass">
-                <el-button :icon="Edit" round @click="arrcategory(row, $index)">编辑</el-button>
-                <el-button :icon="Delete" round @click="deleteCategory(row)">删除</el-button>
+                <el-button :icon="Edit" round @click="arrcategory(row, $index)" class="edit-btn"
+                  >编辑</el-button
+                >
+                <el-button :icon="Delete" round @click="deleteCategory(row)" class="delete-btn"
+                  >删除</el-button
+                >
               </div>
             </template>
           </el-table-column>
@@ -293,7 +326,58 @@ const deleteCate = async (row) => {
     </template>
   </el-drawer>
 </template>
-<style scoped>
+<style scoped lang="scss">
+.common-layout {
+  margin-top: 40px;
+}
+.mainget {
+  width: 100%;
+  height: 100%;
+  .mainitem {
+    margin-top: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+  }
+  img {
+    width: 200px;
+    height: 200px;
+  }
+  .text {
+    text-align: center;
+    font-size: 30px;
+    color: #8c939d;
+  }
+}
+.text {
+  margin-top: 30px;
+  width: 100%;
+}
+.pass {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  gap: 15px;
+}
+.edit-btn:hover {
+  width: 50%;
+  height: 100%;
+  transition: all 0.3s ease;
+}
+.delete-btn:hover {
+  width: 50%;
+  height: 100%;
+  transition: all 0.3s ease;
+}
+.delete-btn {
+  width: 40%;
+  height: 100%;
+}
+.edit-btn {
+  width: 40%;
+  height: 100%;
+}
 .pass {
   display: flex;
   align-content: center;

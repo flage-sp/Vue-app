@@ -20,6 +20,8 @@ const route = useRoute() // 当前路由信息对象
 const resd = ref([])
 const usestore = useuserstore()
 const lottieBox = ref(null)
+const headers = ref('')
+const scrollindex = ref('')
 onMounted(() => {
   lottieBox.value = lottie.loadAnimation({
     container: lottieBox.value,
@@ -53,7 +55,10 @@ watch(
     router.push(newParams)
     usestore.addreser(newParams)
   },
-  { deep: true },
+  {
+    immediate: true,
+    deep: true,
+  },
 )
 </script>
 
@@ -67,14 +72,14 @@ watch(
           class="el-menu-vertical-demo"
           text-color="white"
           background-color="black"
-          active-text-color="blue"
+          active-text-color="#409EFF"
           router
         >
-          <el-menu-item index="/ArticleManage" :icon="Management" route="/ArticleManage">
+          <el-menu-item index="/ArticleManage">
             <el-icon><Management /></el-icon>
             <span>首页</span>
           </el-menu-item>
-          <el-menu-item index="/ArticleChannel" route="/ArticleChannel">
+          <el-menu-item index="/ArticleChannel">
             <el-icon><Promotion /></el-icon>
             <span>文章管理</span>
           </el-menu-item>
@@ -84,13 +89,13 @@ watch(
               <span>个人中心</span>
             </template>
             <el-menu-item-group>
-              <el-menu-item index="/userProfile" v-if="resd.data" route="/userProfile"
+              <el-menu-item index="/userProfile" v-if="resd.data"
                 ><el-icon><User /></el-icon>{{ resd.data[2].children[0].title }}</el-menu-item
               >
-              <el-menu-item index="/UserPawssword" v-if="resd.data" route="/UserPawssword"
+              <el-menu-item index="/UserPawssword" v-if="resd.data"
                 ><el-icon><Switch /></el-icon>{{ resd.data[2].children[2].title }}</el-menu-item
               >
-              <el-menu-item index="/UserAvatar" v-if="resd.data" route="/UserAvatar"
+              <el-menu-item index="/UserAvatar" v-if="resd.data"
                 ><el-icon><EditPen /></el-icon>{{ resd.data[2].children[1].title }}</el-menu-item
               >
             </el-menu-item-group>
@@ -98,11 +103,12 @@ watch(
         </el-menu>
       </el-aside>
       <el-container>
-        <el-header>
+        <el-header class="header">
           <div>
             用户姓名:
             <strong>{{ usestore.from.username }}</strong>
           </div>
+
           <el-dropdown>
             <div class="el-dropdown-link">
               <img :src="usestore.files.user_pic" alt="" v-if="usestore.files.user_pic" />
@@ -112,7 +118,7 @@ watch(
               </el-icon>
             </div>
             <template #dropdown>
-              <el-dropdown-menu>
+              <el-dropdown-menu :z-index="99999">
                 <el-dropdown-item @click="router.push('/userProfile')">基本资料</el-dropdown-item>
                 <el-dropdown-item @click="router.push('/UserAvatar')">更换头像</el-dropdown-item>
                 <el-dropdown-item @click="router.push('/UserPawssword')">重置密码</el-dropdown-item>
@@ -121,10 +127,11 @@ watch(
             </template>
           </el-dropdown>
         </el-header>
-        <el-main>
-          <router-view v-slot="{ Component }">
+        <div class="headers" ref="headers" v-if="scrollindex > 10"></div>
+        <el-main width="auto">
+          <router-view v-slot="props">
             <transition name="route-fade">
-              <component :is="Component" />
+              <component :is="props.Component" />
             </transition>
           </router-view>
         </el-main>
@@ -134,10 +141,26 @@ watch(
 </template>
 
 <style scoped lang="scss">
+.headers {
+  width: 1284.85px;
+  height: 100px;
+  box-sizing: border-box;
+  position: absolute;
+  top: 75px;
+  margin: 0px 20px 0px 20px;
+  z-index: 999;
+}
+
 .el-aside {
   width: 220px;
-  height: 1000px;
+  height: 100vh; /* 使用视口高度 */
 }
+
+.el-main {
+  max-height: calc(100vh - 60px);
+  overflow-y: auto; /* 添加垂直滚动 */
+}
+
 .ui {
   height: 25%;
   background-color: black;

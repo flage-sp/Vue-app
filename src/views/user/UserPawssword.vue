@@ -4,6 +4,7 @@ import { useuserstore } from '@/stores/index'
 import { modify } from '@/api/index'
 import { ElMessage } from 'element-plus'
 import FormWork from '@/component/FormWork.vue'
+const height = ref(1)
 const store = useuserstore()
 const formModel = ref({
   old_pwd: '',
@@ -50,7 +51,7 @@ const reset = () => {
 
 <template>
   <div>
-    <FormWork :message="[]" :getlist="() => {}">
+    <FormWork :message="[]" :getlist="() => {}" :height="height">
       <template #pos>
         <div>
           <el-form
@@ -60,7 +61,7 @@ const reset = () => {
             status-icon
             size="large"
             :rules="rules"
-            label-width="100"
+            label-width="auto"
           >
             <el-form-item label="原密码" prop="old_pwd">
               <el-input v-model="formModel.old_pwd"> </el-input>

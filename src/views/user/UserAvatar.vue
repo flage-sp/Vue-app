@@ -5,6 +5,7 @@ import { touxiang } from '@/api/index'
 import FormWork from '@/component/FormWork.vue'
 import { huqu } from '@/api/index'
 import { useuserstore } from '@/stores/index'
+import { ElMessage } from 'element-plus'
 
 const userstore = useuserstore()
 const imgUrl = ref('')
@@ -19,18 +20,29 @@ const onSelectFile = async (uploadFile) => {
   imgUrl.value = img
 }
 const poss = async () => {
-  const ress = await huqu()
-  userstore.addres(ress.data)
+  try {
+    if (imgUrl.value === '') {
+      ElMessage.success('请选择图片')
+      return
+    }
+    const ress = await huqu()
+    userstore.addres(ress.data)
+    ElMessage.success('上传成功')
+    imgUrl.value = ''
+  } catch (error) {
+    ElMessage.error(error.message)
+  }
 }
 const updata = ref('')
 const disster = () => {
   updata.value.$el.querySelector('input[type="file"]').click()
 }
+const height = ref(1)
 </script>
 
 <template>
   <div>
-    <FormWork :message="[]" :getlist="() => {}">
+    <FormWork :message="[]" :getlist="() => {}" :height="height">
       <template #pos>
         <div>
           <el-form label-width="auto">
@@ -47,9 +59,9 @@ const disster = () => {
                 <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
               </el-upload>
             </el-form-item>
-            <el-form-item label-width="67">
-              <el-button type="primary" @click="disster">选择头像</el-button>
-              <el-button type="info" @click="poss">上传头像</el-button>
+            <el-form-item label-width="67px" class="btn-group">
+              <el-button type="primary" @click="disster" class="select-btn">选择头像</el-button>
+              <el-button type="info" @click="poss" class="upload-btn">上传头像</el-button>
             </el-form-item>
           </el-form>
         </div>
@@ -59,16 +71,19 @@ const disster = () => {
 </template>
 
 <style scoped>
+.btn-group {
+  margin-top: 40px;
+}
+.upload-btn {
+  margin-left: 30px;
+}
 .avatar-uploader .avatar {
-  width: 178px;
-  height: 178px;
+  width: 300px;
+  height: 300px;
   display: block;
 }
-</style>
-
-<style>
-.avatar-uploader .el-upload {
-  border: 1px dashed var(--el-border-color);
+.avatar-uploader :deep(.el-upload) {
+  border: 1px solid #dcdfe6;
   border-radius: 6px;
   cursor: pointer;
   position: relative;

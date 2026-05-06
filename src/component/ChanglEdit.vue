@@ -8,14 +8,23 @@ const forminput = ref({
   cate_name: '',
   cate_alias: '',
 })
+const props = defineProps(['parent'])
 const rulestt = {
   cate_name: [
     { required: true, message: '不能为空', trigger: 'blur' },
-    { min: 1, max: 6, message: '用户名格式必须是1到6位', trigger: 'blur' },
+    {
+      pattern: /^[a-zA-Z0-9]{1,6}$/,
+      message: '分类名称格式必须是1到6位英文或数字',
+      trigger: 'blur',
+    },
   ],
   cate_alias: [
     { required: true, message: '不能为空', trigger: 'blur' },
-    { min: 1, max: 6, message: '用户名格式必须是1到6位', trigger: 'blur' },
+    {
+      pattern: /^[a-zA-Z0-9]{1,6}$/,
+      message: '分类别名格式必须是1到6位英文或数字',
+      trigger: 'blur',
+    },
   ],
 }
 const form = ref()
@@ -29,19 +38,32 @@ const open = async (row) => {
   }
   roww.value = row
 }
-const props = defineProps(['parent'])
-const Edie = async () => {
+
+const Edie = () => {
   if (roww.value.id) {
-    form.value.validate()
-    await edies(forminput.value)
-    ElMessage.success('修改成功')
-    props.parent()
-    dialogVisible.value = false
+    form.value
+      .validate()
+      .then(async () => {
+        await edies(forminput.value)
+        ElMessage.success('修改成功')
+        props.parent()
+        dialogVisible.value = false
+      })
+      .catch(() => {
+        ElMessage.error('修改失败')
+      })
   } else {
-    await addedies(forminput.value)
-    ElMessage.success('添加成功')
-    props.parent()
-    dialogVisible.value = false
+    form.value
+      .validate()
+      .then(async () => {
+        await addedies(forminput.value)
+        ElMessage.success('添加成功')
+        props.parent()
+        dialogVisible.value = false
+      })
+      .catch(() => {
+        ElMessage.error('添加失败')
+      })
   }
 }
 defineExpose({
@@ -62,7 +84,7 @@ defineExpose({
       status-icon
       size="large"
       :rules="rulestt"
-      label-width="100px"
+      label-width="100px || auto"
       class="demo-ruleForm"
     >
       <el-form-item label="分类名称" prop="cate_name">

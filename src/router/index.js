@@ -44,6 +44,7 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const usestore = useuserstore()
+
   if (!usestore.token && to.path !== '/LoginPage') {
     next('/LoginPage')
   } else {

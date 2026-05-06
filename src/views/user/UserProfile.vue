@@ -4,6 +4,7 @@ import { ref } from 'vue'
 import { useuserstore } from '@/stores/index'
 import { gengxin } from '@/api/index'
 import { ElMessage } from 'element-plus'
+const height = ref(1)
 const store = useuserstore()
 const formModel = ref({
   username: store.files.username,
@@ -37,7 +38,7 @@ const counter = async () => {
 
 <template>
   <div>
-    <FormWork :message="[]" :getlist="() => {}">
+    <FormWork :message="[]" :getlist="() => {}" :height="height">
       <template #pos>
         <div>
           <el-form
@@ -47,7 +48,7 @@ const counter = async () => {
             status-icon
             size="large"
             :rules="rules"
-            label-width="100"
+            label-width="auto"
           >
             <el-form-item label="登录名称">
               <el-input v-model="formModel.old_pwd" disabled> </el-input>

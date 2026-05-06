@@ -1,15 +1,20 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import FormWork from '@/component/FormWork.vue'
 import { artDel } from '@/api/index'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import { useuserstore } from '@/stores/index'
+import { useRoute } from 'vue-router'
+import { debounce } from '@/hooks/utils'
+import { ElMessage } from 'element-plus'
+
+const route = useRoute()
 const store = useuserstore()
 const loadings = ref(false)
 const list = ref([])
 const currentPage = ref(1)
 const pageSize = ref(2)
-const tes = ref('文章管理')
+const divloading = ref(false)
 const text = [
   { id: 1, title: '草稿' },
   { id: 2, title: '已发布' },
@@ -21,6 +26,11 @@ const dropbox = ref({
 const run = ref('')
 const runs = ref(0)
 const yt = async (bool) => {
+  if (bool === 1) {
+    divloading.value = true
+  } else {
+    loadings.value = true
+  }
   store.removeloading(bool)
   const res = await artDel(
     store.currentPage,
@@ -34,12 +44,21 @@ const yt = async (bool) => {
       dateObj: new Date(item.pub_date).toLocaleDateString(zhCn), // 新增字段：Date 对象
     }
   })
+
   list.value = processedData
   store.removeloading(false)
   run.value = Math.ceil(res.total / store.pageSize)
   runs.value = res.total
+  if (bool === 1) {
+    divloading.value = false
+  } else {
+    loadings.value = false
+  }
 }
-yt()
+onMounted(() => {
+  yt()
+})
+
 const handleSizeChange = async (newsize) => {
   loadings.value = true
   pageSize.value = newsize
@@ -59,21 +78,39 @@ const hangbars = (tolist) => {
   filist.value = tolist
 }
 store.dests()
+const returns = debounce(yt, 500)
 const sumd = async () => {
-  loadings.value = true
+  if (dropbox.value.cate_id === '') {
+    ElMessage.success('请选择文章分类')
+    return
+  }
+  if (dropbox.value.state === '') {
+    ElMessage.success('请选择发布状态')
+    return
+  }
   store.dest(dropbox.value)
-  await yt(true)
-  loadings.value = false
+  await returns(yt)
 }
-const reset = () => {
+const reset = async () => {
   dropbox.value.cate_id = ''
   dropbox.value.state = ''
+  divloading.value = true
+  yt(1)
 }
+const height = ref(1)
 </script>
 
 <template>
   <div>
-    <FormWork :message="tes ? list : []" @meesage="hangbars" :getlist="yt" :loadings="loadings">
+    <FormWork
+      :message="route.fullPath === '/ArticleChannel' ? list : []"
+      @meesage="hangbars"
+      :getlist="yt"
+      :loadings="loadings"
+      :height="height"
+      :top="'0px'"
+      :divloading="divloading"
+    >
       <template #header>
         <el-form
           ref="from"
@@ -111,6 +148,7 @@ const reset = () => {
       <template #footer>
         <div class="demo-pagination-block">
           <el-pagination
+            v-if="list.length > 0"
             v-model:current-page="store.currentPage"
             v-model:page-size="store.pageSize"
             :page-sizes="[2, 3, 5]"
@@ -121,7 +159,7 @@ const reset = () => {
           />
         </div>
       </template>
-      <template #text>{{ tes }}</template>
+      <template #text>{{ store.files.username }}</template>
       <template #tred><el-button type="primary">发布文章</el-button></template>
     </FormWork>
   </div>

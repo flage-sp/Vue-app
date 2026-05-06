@@ -10,9 +10,10 @@ import lottie from 'lottie-web'
 import jsonData from '@/assets/huakuai.json'
 import tushu from '@/assets/tushu.json'
 const router = useRouter()
-
+const froms = ref('')
 const lottieBox = ref(null)
 const tubiaosa = ref(null)
+const loadings = ref(false)
 onMounted(() => {
   lottieBox.value = lottie.loadAnimation({
     container: lottieBox.value,
@@ -65,58 +66,90 @@ const submit = async () => {
     ElMessage.success('密码不一致')
     return
   }
-  await from.value.validate()
+  loadings.value = true
   const res = await register(formModel.value)
+  loadings.value = false
+  if (res.code === 1) {
+    ElMessage.success(res.message)
+    return
+  }
   if (res.code === 2) {
     ElMessage.success('格式不正确')
     return
   }
-
-  ElMessage.success(res.message)
-  if (res.code == 0) {
-    loading.value = true
-    transformstion.value = false
-    if (transformstion.value === false) {
-      loading.value = false
-    }
-    formModel.value.username = ''
-    formModel.value.password = ''
-    formModel.value.repassword = ''
-  }
+  froms.value
+    .validate()
+    .then(() => {
+      transformstion.value = false
+      if (transformstion.value === false) {
+        loadings.value = false
+      }
+      formModel.value.username = ''
+      formModel.value.password = ''
+      formModel.value.repassword = ''
+      ElMessage.success(res.message)
+    })
+    .catch(() => {
+      ElMessage.success(res.message)
+    })
 }
 
 const loggin = async () => {
-  if (formModel.value.username == '' || formModel.value.password == '') {
-    ElMessage.success('请输入用户名和密码')
+  if (formModel.value.username == '') {
+    ElMessage.success('请输入用户名')
+    return
+  }
+  if (formModel.value.password == '') {
+    ElMessage.success('请输入密码')
     return
   }
   loading.value = true
-  await from.value.validate()
-  const res = await login(formModel.value)
-  userstore.settoken(res.token)
-  userstore.setfrom(formModel.value)
-  loading.value = false
-  const ress = await huqu()
-  userstore.addres(ress.data)
-  // 提示关闭后执行跳转（精准同步）
-  // 提示关闭后的回调
-  ElMessage.success('登录成功')
-  setTimeout(() => [router.push('/ArticleManage')], 1000)
+  from.value
+    .validate()
+    .then(async () => {
+      const res = await login(formModel.value)
+
+      userstore.settoken(res.token)
+      userstore.setfrom(formModel.value)
+      loading.value = false
+      const ress = await huqu()
+      userstore.addres(ress.data)
+      // 提示关闭后执行跳转（精准同步）
+      // 提示关闭后的回调
+      ElMessage.success('登录成功')
+      setTimeout(() => {
+        router.push('/ArticleManage')
+      }, 1000)
+    })
+    .catch((res) => {
+      if (res.response?.status === 401) {
+        ElMessage.success('用户名或密码错误')
+        return
+      }
+      loading.value = false
+      ElMessage.success('请输入正确的格式')
+    })
 }
 </script>
 <template>
   <div class="login">
     <el-row>
       <el-col :span="12" class="bg">
-        <div class="title">欢迎使用图书管理系统</div>
-        <div ref="tubiaosa" class="tubiaosa"></div>
+        <div
+          class="title"
+          v-html="`<p>欢迎使用图书管理系统</p>`"
+          style="transform: translateX(20px)"
+        ></div>
+        <div class="tubiaosa">
+          <div ref="tubiaosa" class="svg-box"></div>
+        </div>
       </el-col>
       <el-col :span="3"></el-col>
-      <el-col :span="6" v-loading="loading">
+      <el-col :span="6">
         <div class="lottie-box" ref="lottieBox"></div>
         <transition name="form-fade" mode="out-in">
           <el-form
-            ref="from"
+            ref="froms"
             style="max-width: 600px"
             :model="formModel"
             status-icon
@@ -124,6 +157,7 @@ const loggin = async () => {
             :rules="rules"
             label-width="auto"
             class="demo-ruleForm"
+            :loading="loading"
             v-if="transformstion"
           >
             <el-form-item>
@@ -156,7 +190,14 @@ const loggin = async () => {
             </el-form-item>
             <el-form-item>
               <div class="kk">
-                <el-button type="primary" size="large" round style="width: 400px" @click="submit()">
+                <el-button
+                  type="primary"
+                  size="large"
+                  round
+                  style="width: 400px"
+                  @click="submit()"
+                  :loading="loadings"
+                >
                   注册
                 </el-button>
               </div>
@@ -203,7 +244,14 @@ const loggin = async () => {
             </el-form-item>
             <el-form-item>
               <div class="kk">
-                <el-button type="primary" size="large" round style="width: 400px" @click="loggin()">
+                <el-button
+                  type="primary"
+                  size="large"
+                  round
+                  style="width: 400px"
+                  @click="loggin()"
+                  :loading="loading"
+                >
                   登录
                 </el-button>
               </div>
@@ -239,9 +287,20 @@ const loggin = async () => {
   color: #333;
   margin-bottom: 20px;
 }
+
 .tubiaosa {
   width: 100%;
   height: 70%;
+}
+.svg-box {
+  width: 100%;
+  height: 100%;
+}
+.svg-box:hover {
+  width: 120%;
+  height: 120%;
+  transform: translateX(-50px);
+  transition: all 0.3s ease;
 }
 /* 过渡动画样式 */
 .form-fade-enter-from,
@@ -258,7 +317,6 @@ const loggin = async () => {
 .form-fade-enter-to,
 .form-fade-leave-from {
   opacity: 1;
-  transform: translateX(0px);
 }
 .ww {
   font-size: 20px;
