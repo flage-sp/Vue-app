@@ -38,6 +38,7 @@ const yt = async (bool) => {
     store.dropbox.cate_id,
     store.dropbox.state,
   )
+  console.log(dropbox.value, res)
   const processedData = res.data.map((item) => {
     return {
       ...item, // 保留原有字段

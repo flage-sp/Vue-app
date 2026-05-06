@@ -239,11 +239,13 @@ const deleteCate = async (row) => {
               </template>
             </el-table-column>
           </el-table>
-          <div class="mainitem" v-if="!props.loadings && props.message.length === 0">
-            <div v-loading="props.divloading">
-              <img src="../assets/crying_face_color.svg" alt="加载中..." />
-              <div class="text">当前没有文章,请去添加文章吧</div>
-            </div>
+          <div
+            class="mainitem"
+            v-if="!props.loadings && props.message.length === 0"
+            v-loading="props.divloading"
+          >
+            <img src="../assets/crying_face_color.svg" alt="加载中..." />
+            <div class="text">当前没有文章,请去添加文章吧</div>
           </div>
         </div>
         <el-table
