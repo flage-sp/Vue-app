@@ -1,4 +1,8 @@
-<script setup></script>
+<script setup>
+import { reactive, isRef } from 'vue'
+const app = reactive({ count: 1 })
+console.log(isRef(app))
+</script>
 <template>
   <router-view name="sidebar"></router-view>
 </template>
