@@ -23,16 +23,32 @@ const rules = {
     { pattern: /^[a-zA-Z0-9]{1,18}$/, message: '请输入1到18位字母数字密码', trigger: 'blur' },
   ],
 }
-const counter = async () => {
-  const res = await gengxin(formModel.value)
-
-  if (res.code == 2) {
-    ElMessage.success('邮箱输入错误')
+const froms = ref(null)
+const counter = () => {
+  if (formModel.value.nickname.trim() === '') {
+    ElMessage.success('请输入昵称')
     return
   }
-  ElMessage.success(res.message)
-  formModel.value.nickname = ''
-  formModel.value.email = ''
+  if (formModel.value.email.trim() === '') {
+    ElMessage.success('请输入邮箱')
+    return
+  }
+  froms.value
+    .validate()
+    .then(async () => {
+      const res = await gengxin(formModel.value)
+
+      if (res.code == 2) {
+        ElMessage.success('邮箱输入错误')
+        return
+      }
+      ElMessage.success(res.message)
+      formModel.value.nickname = ''
+      formModel.value.email = ''
+    })
+    .catch(() => {
+      ElMessage.success('输入信息错误')
+    })
 }
 </script>
 
@@ -48,7 +64,7 @@ const counter = async () => {
             status-icon
             size="large"
             :rules="rules"
-            label-width="auto"
+            label-width="auto || 100px"
           >
             <el-form-item label="登录名称">
               <el-input v-model="formModel.old_pwd" disabled> </el-input>

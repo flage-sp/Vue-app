@@ -7,14 +7,14 @@
 export function debounce(fn, delay) {
   let timer = null
 
-  return function (...args) {
+  return function () {
     return new Promise((resolve) => {
       if (timer) {
         clearTimeout(timer)
       }
       timer = setTimeout(async () => {
-        await fn.apply(this, args)
-        resolve(args)
+        const res = await fn()
+        resolve(res)
         timer = null
       }, delay)
     })

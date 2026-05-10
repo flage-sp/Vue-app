@@ -97,7 +97,7 @@ const props = defineProps({
     type: Number,
   },
   top: {
-    type: Number,
+    type: String,
   },
   divloading: {
     type: Boolean,
@@ -190,9 +190,9 @@ const firmClick = async (title) => {
   props.getlist(true)
   drawer2.value = false
 }
+
 const deleteCate = async (row) => {
   await deletetext(row.id)
-
   ElMessage.success('删除成功')
   props.getlist(true)
 }

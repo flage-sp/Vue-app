@@ -45,7 +45,7 @@ const height = ref(1)
     <FormWork :message="[]" :getlist="() => {}" :height="height">
       <template #pos>
         <div>
-          <el-form label-width="auto">
+          <el-form label-width="auto || 100px">
             <el-form-item label="选择图片">
               <el-upload
                 class="avatar-uploader"

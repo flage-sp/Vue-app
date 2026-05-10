@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { Lock, User } from '@element-plus/icons-vue'
 import { register, login } from '@/api/index'
 import { useuserstore } from '@/stores/index'
@@ -9,6 +9,9 @@ import { huqu } from '@/api/index'
 import lottie from 'lottie-web'
 import jsonData from '@/assets/huakuai.json'
 import tushu from '@/assets/tushu.json'
+import { debounce } from '@/hooks/utils'
+
+const refinput = ref(null)
 const router = useRouter()
 const froms = ref('')
 const lottieBox = ref(null)
@@ -29,6 +32,7 @@ onMounted(() => {
     loop: true,
     autoplay: true,
   })
+  refinput.value.focus()
 })
 const userstore = useuserstore()
 const loading = ref(false)
@@ -52,14 +56,44 @@ const rules = {
     { pattern: /^[a-zA-Z0-9]{6,9}$/, message: '请输入6到9位的字母数字密码', trigger: 'blur' },
   ],
 }
+
 const transformstion = ref(false)
-const text = ref('注册')
-const mation = (textd) => {
+const text = ref('去注册')
+const refpassword = ref(null)
+
+const mation = async () => {
+  // 切换表单状态
   transformstion.value = !transformstion.value
-  text.value = textd
+
+  // 根据当前状态设置按钮文字
+  if (transformstion.value) {
+    // 切换到注册表单
+    text.value = '去登录'
+  } else {
+    // 切换到登录表单
+    text.value = '去注册'
+  }
+
+  // 清空表单数据
   formModel.value.username = ''
   formModel.value.password = ''
   formModel.value.repassword = ''
+
+  // 等待过渡动画完成后设置焦点
+  await new Promise((resolve) => setTimeout(resolve, 350))
+  nextTick(() => {
+    if (transformstion.value) {
+      console.log(refpassword.value)
+      if (refpassword.value) {
+        refpassword.value.focus()
+      }
+    } else {
+      console.log(refinput.value)
+      if (refinput.value) {
+        refinput.value.focus()
+      }
+    }
+  })
 }
 const submit = async () => {
   if (!(formModel.value.password == formModel.value.repassword)) {
@@ -93,7 +127,7 @@ const submit = async () => {
       ElMessage.success(res.message)
     })
 }
-
+const loginlist = debounce(() => login(formModel.value), 1000)
 const loggin = async () => {
   if (formModel.value.username == '') {
     ElMessage.success('请输入用户名')
@@ -107,12 +141,13 @@ const loggin = async () => {
   from.value
     .validate()
     .then(async () => {
-      const res = await login(formModel.value)
-
+      const res = await loginlist()
+      console.log(res.token)
       userstore.settoken(res.token)
       userstore.setfrom(formModel.value)
       loading.value = false
       const ress = await huqu()
+      console.log(ress)
       userstore.addres(ress.data)
       // 提示关闭后执行跳转（精准同步）
       // 提示关闭后的回调
@@ -131,6 +166,7 @@ const loggin = async () => {
     })
 }
 </script>
+
 <template>
   <div class="login">
     <el-row>
@@ -161,13 +197,19 @@ const loggin = async () => {
             v-if="transformstion"
           >
             <el-form-item>
-              <h1>{{ text }}</h1>
+              <h1>注册</h1>
               <div class="iconfonts">
                 <el-icon><img src="@/assets/tab_mine_4.svg" alt="加载中..." /></el-icon>
               </div>
             </el-form-item>
             <el-form-item label="用户名" prop="username">
-              <el-input placeholder="请输入用户名" :prefix-icon="User" v-model="formModel.username">
+              <el-input
+                placeholder="请输入用户名"
+                :prefix-icon="User"
+                v-model="formModel.username"
+                label-width="auto"
+                ref="refpassword"
+              >
               </el-input>
             </el-form-item>
             <el-form-item label="密码" prop="password">
@@ -203,8 +245,8 @@ const loggin = async () => {
               </div>
             </el-form-item>
             <el-form-item class="bb">
-              <div class="ww" @click="mation('注册')">
-                <div class="ee">去登录</div>
+              <div class="ww" @click="mation(true)">
+                <div class="ee">{{ text }}</div>
                 <div class="iconfont">
                   <el-icon><img src="@/assets/jinru.svg" alt="加载中..." /></el-icon>
                 </div>
@@ -229,7 +271,12 @@ const loggin = async () => {
               </div>
             </el-form-item>
             <el-form-item label="用户名" prop="username">
-              <el-input placeholder="请输入用户名" :prefix-icon="User" v-model="formModel.username">
+              <el-input
+                placeholder="请输入用户名"
+                :prefix-icon="User"
+                v-model="formModel.username"
+                ref="refinput"
+              >
               </el-input>
             </el-form-item>
             <el-form-item label="密码" prop="password">
@@ -257,8 +304,8 @@ const loggin = async () => {
               </div>
             </el-form-item>
             <el-form-item class="bb">
-              <div class="ww" @click="mation('注册')">
-                <div class="ee">去{{ text }}</div>
+              <div class="ww" @click="mation(refusername)">
+                <div class="ee">{{ text }}</div>
                 <div class="iconfont">
                   <el-icon><img src="@/assets/jinru.svg" alt="加载中..." /></el-icon>
                 </div>

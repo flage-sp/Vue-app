@@ -1,5 +1,18 @@
 <script setup>
 import FormWork from '@/component/FormWork.vue'
+import { onMounted } from 'vue'
+
+onMounted(async () => {
+  const res = ['1', '2', '3', '4', '5', '3']
+  function getid(res) {
+    return res.filter((item, index) => {
+      return res.indexOf(item) === index
+    })
+  }
+  console.log(res.indexOf('3') === 2)
+  const id = getid(res)
+  console.log(id)
+})
 /* import { nextTick, ref, onMounted } from 'vue'
 
 const scrollindex = ref(0)

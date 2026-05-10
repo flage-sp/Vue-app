@@ -61,7 +61,7 @@ const reset = () => {
             status-icon
             size="large"
             :rules="rules"
-            label-width="auto"
+            label-width="auto || 100px"
           >
             <el-form-item label="原密码" prop="old_pwd">
               <el-input v-model="formModel.old_pwd"> </el-input>

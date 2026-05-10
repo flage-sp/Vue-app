@@ -38,7 +38,7 @@ const yt = async (bool) => {
     store.dropbox.cate_id,
     store.dropbox.state,
   )
-  console.log(dropbox.value, res)
+
   const processedData = res.data.map((item) => {
     return {
       ...item, // 保留原有字段
@@ -93,6 +93,11 @@ const sumd = async () => {
   await returns(yt)
 }
 const reset = async () => {
+  if (dropbox.value.cate_id === '' || dropbox.value.state === '') {
+    ElMessage.success('请选择文章分类或发布状态')
+    return
+  }
+  store.dests()
   dropbox.value.cate_id = ''
   dropbox.value.state = ''
   divloading.value = true
