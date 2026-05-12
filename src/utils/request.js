@@ -3,7 +3,7 @@ import { useuserstore } from '@/stores/index'
 import router from '@/router'
 
 const uesstore = useuserstore()
-export const baseurl = 'http://big-event-vue-api-t.itheima.net'
+export const baseurl = 'https://big-event-vue-api-t.itheima.net'
 import axios from 'axios'
 const instance = axios.create({
   baseURL: baseurl,
